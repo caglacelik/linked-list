@@ -2,7 +2,7 @@ use std::{fmt::Debug};
 
 use crate::List::*;
 
-#[derive(Debug)]
+// #[derive(Debug)]
 #[derive(Clone)] 
 pub enum List<i32> {
     Cons(i32, Box<List<i32>>),
@@ -10,7 +10,6 @@ pub enum List<i32> {
 }
 
 impl List<i32> {
-    
     pub fn head(&self) -> &i32 {
         match *self {
             Cons(ref head, _) => head,
@@ -67,5 +66,4 @@ impl List<i32> {
             },
         }
     }
-        
 }
