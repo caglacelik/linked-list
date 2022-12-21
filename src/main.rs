@@ -9,7 +9,6 @@ fn main() {
     list = list.insert(54);
     list = list.insert(68);
     
-    
     println!("linked list has length: {}", list.len());
     println!("{}", list.print());
 
