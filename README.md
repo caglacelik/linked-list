@@ -1,1 +1,1 @@
-# linked_list
+# Linked list implementation with Rust
