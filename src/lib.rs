@@ -1,69 +1,72 @@
-use std::{fmt::Debug};
+use std::mem;
 
-use crate::List::*;
-
-// #[derive(Debug)]
-#[derive(Clone)] 
-pub enum List<i32> {
-    Cons(i32, Box<List<i32>>),
-    Nil,
+pub struct List {
+    head: Link,
 }
 
-impl List<i32> {
-    pub fn head(&self) -> &i32 {
-        match *self {
-            Cons(ref head, _) => head,
-            Nil => panic!("This is an empty list!!!")
-        }
-    }
-    
-    pub fn tail(&self) -> &Box<List<i32>> {
-        match *self {
-            Cons(_, ref tail) => tail,
-            Nil => panic!("This is an empty list!!!")
-        }
+enum Link {
+    Empty,
+    More(Box<Node>),
+}
+
+struct Node {
+    elem: i32,
+    next: Link,
+}
+
+impl List {
+    pub fn new() -> Self {
+        List { head: Link::Empty }
     }
 
-    pub fn new() -> List<i32> {
-        Nil
+    pub fn push(&mut self, elem: i32) {
+        let new_node = Box::new(Node {
+            elem: elem,
+            next: mem::replace(&mut self.head, Link::Empty),
+        });
+
+        self.head = Link::More(new_node);
     }
 
-    pub fn insert(self, elem: i32) -> List<i32> {
-        Cons(elem, Box::new(self))
-    }
-
-    pub fn len(&self) -> i32 {
-        match *self {
-            Cons(_, ref tail) => 1 + tail.len(),
-            Nil => 0
+    pub fn pop(&mut self) -> Option<i32> {
+        match mem::replace(&mut self.head, Link::Empty) {
+            Link::Empty => None,
+            Link::More(node) => {
+                self.head = node.next;
+                Some(node.elem)
+            }
         }
     }
+}
 
-    pub fn print(&self) -> String {
-        match *self {
-            Cons(head, ref tail) => {
-                format!("{}, {}", head, tail.print())
-            },
-            Nil => {
-                format!("")
-            },
+impl Drop for List {
+    fn drop(&mut self) {
+        let mut cur_link = mem::replace(&mut self.head, Link::Empty);
+
+        while let Link::More(mut boxed_node) = cur_link {
+            cur_link = mem::replace(&mut boxed_node.next, Link::Empty);
         }
     }
+}
 
-    pub fn remove(&mut self, elem: i32) -> bool {
-        match self {
-            Cons(head, tail) => {
-                if *head == elem {
-                    *self = Cons(*tail.head(), tail.tail().clone());
-                    true
-                }
-                else {
-                    tail.remove(elem)
-                }
-            },
-            Nil => {
-                false
-            },
-        }
+#[cfg(test)]
+mod test {
+    use super::List;
+
+    #[test]
+    fn basics() {
+        let mut list = List::new();
+        assert_eq!(list.pop(), None);
+
+        list.push(40);
+        list.push(358);
+
+        assert_eq!(list.pop(), Some(358));
+
+        list.push(579);
+
+        assert_eq!(list.pop(), Some(579));
+        assert_eq!(list.pop(), Some(40));
+        assert_eq!(list.pop(), None);
     }
 }
